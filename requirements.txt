@@ -1,0 +1,9 @@
+streamlit
+pandas
+seaborn
+matplotlib
+tensorflow
+requests
+base64
+pickle
+io
