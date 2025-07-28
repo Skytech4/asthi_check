@@ -9,6 +9,7 @@ import base64
 import pickle
 import io
 import requests
+import os
 
 
 @st.cache_data
@@ -45,9 +46,9 @@ def predict_asthma(Hydroxyurea, ICS, LABA, Gender, Age, Height , Weight, BMI, R5
 
         prediction = loaded_model.predict(nouvelles_donnees)
         if prediction[0] == 0:
-            return "✅ No Asthma"
+            return "Normal"
         else:
-            return "⭕️ Asthma"
+            return "Asthmatique"
     except FileNotFoundError:
         st.error("❌ File of Machin Learning Model Unfounded")
     except Exception as e:
@@ -62,55 +63,294 @@ def load_local_css(file_path):
 
 load_local_css("Folder_style/asthma.css")
 
+
+TRANSLATIONS = {
+    "Bienvenue sur ASTHIA": {
+        "fr": "Bienvenue sur ASTHIA",
+        "en": "Welcome to ASTHIA"
+    },
+    "Qu'est-ce que l'asthme ?": {
+        "fr": "Qu'est-ce que l'asthme ?",
+        "en": "What is asthma?"
+    },
+    "L’asthme est une maladie respiratoire chronique qui se caractérise par une inflammation, mais aussi un rétrécissement des voies respiratoires, ce qui rend la respiration plus difficile.": {
+        "fr": "L’asthme est une maladie respiratoire chronique qui se caractérise par une inflammation, mais aussi un rétrécissement des voies respiratoires, ce qui rend la respiration plus difficile.",
+        "en": "Asthma is a chronic respiratory condition which is characterized by inflammation and narrowing of the airways, making breathing difficult."
+    },
+    "Visualisation": {"fr": "Visualisation", "en": "Visualization"},
+    "Analyse": {"fr": "Analyse", "en": "Analysis"},
+    "ChatBot": {"fr": "ChatBot", "en": "ChatBot"},
+    "Home": {"fr": "Accueil", "en": "Home"},
+    "Langue": {"fr": "🇫🇷", "en": "🇬🇧"},
+    "Formulaire des paramètres asthmatiques": {
+        "fr": "Formulaire des paramètres asthmatiques",
+        "en": "Asthma Parameters Form"
+    },
+    "Entrez les paramètres démographiques :": {
+        "fr": "Entrez les paramètres démographiques :",
+        "en": "Enter demographic parameters:"
+    },
+    "Entrez les paramètres oscillométriques :": {
+        "fr": "Entrez les paramètres oscillométriques :",
+        "en": "Enter oscillometric parameters:"
+    },
+    "Entrez les autres paramètres :": {
+        "fr": "Entrez les autres paramètres :",
+        "en": "Enter other parameters:"
+    },
+    "Prédiction": {"fr": "Prédiction", "en": "Prediction"},
+    "Le patient est": {"fr": "Le patient est", "en": "The patient is"},
+    "Normale": {"fr": "Normale", "en": "Normal"},
+    "Asthmatique": {"fr": "Asthmatique", "en": "Asthmatic"},
+    "Visualisation des données": {
+        "fr": "Visualisation des données",
+        "en": "Data Visualization"
+    },
+    "Count Plot du top 10 des valeurs du BMI" : {
+        "fr": "Count Plot du top 10 des valeurs du BMI",
+        "en": "Count Plot of the top 10 BMI values"
+    },
+    "Pie Chart du top 4 des valeurs fréquentes" : {
+        "fr": "Pie Chart du top 4 des valeurs fréquentes",
+        "en": "Pie Chart of the top 4 frequent values"
+    },
+    "Scatter Plot des tailles en fonction des poids": {
+        "fr": "Scatter Plot des tailles en fonction des poids",
+        "en": "Scatter Plot of heights vs weights"
+    },
+    "Boxplot du genre en fonction de l’âge": {
+        "fr": "Boxplot du genre en fonction de l’âge",
+        "en": "Boxplot of gender vs age"
+    },
+    "Sélectionnez une constante": {
+        "fr": "Sélectionnez une constante",
+        "en": "Select a constant"
+    },
+    "Moyenne de R5Hz_PP 🩸": {
+        "fr": "Moyenne de R5Hz_PP 🩸",
+        "en": "Average of R5Hz_PP 🩸"
+    },
+    "Compte par genre 🚹/🚺": {
+        "fr": "Compte par genre 🚹/🚺",
+        "en": "Count by gender 🚹/🚺"
+    },
+    "Moyenne de R20Hz_PP 💉":  {
+        "fr": "Moyenne de R20Hz_PP 💉",
+        "en": "Average of R20Hz_PP 💉"
+    },
+    "Moyenne de Fres_PP 💊": {
+        "fr": "Moyenne de Fres_PP 💊",
+        "en": "Average of Frez_PP 💊"
+    },
+    "Choisissez le statut de la maladie": {
+        "fr": "Choisissez le statut de la maladie",
+        "en": "Choose the disease's status"
+    },
+    "Sélectionnez une image médicale pour l'analyse par imagerie": {
+        "fr": "Sélectionnez une image médicale pour l'analyse par imagerie",
+        "en": "Select an medical image for the imagery analysis"
+    },
+    "⚠️ Je ne peux répondre à cette question. Veuillez réessayer": {
+        "fr": "⚠️ Je ne peux répondre à cette question. Veuillez réessayer",
+        "en": "⚠️ I can't answer to this question. Please try again"
+    },
+    "Veuillez poser votre question (ex: Que signifie R5Hz_PP ?)":{
+        "fr": "Veuillez poser votre question (ex: Que signifie R5Hz_PP ?)",
+        "en": "Please ask your question (ex: What does R5Hz_PP mean ?)"
+    },
+    "ASTHIBOT réfléchit...": {
+        "fr": "ASTHIBOT réfléchit...",
+        "en": "ASTHIBOT thinks..."
+    },
+    "Discutez avec ASTHIBOT": {
+        "fr": "Discutez avec ASTHIBOT",
+        "en": "Discuss with ASTHIBOT"
+    },
+    "Image sélectionnée": {
+        "fr": "Image sélectionnée",
+        "en": "image selected"
+    },
+    "Etant une condition assez complexe, l'on note l'intervention de plusieurs sous-mécanismes dits physiopathologiques qui sont : une inflammation des voies respiratoires, une hyperréactivité des bronches et un remodelage des voies respiratoires.": {
+        "fr": "Etant une condition assez complexe, l'on note l'intervention de plusieurs sous-mécanismes dits physiopathologiques qui sont : une inflammation des voies respiratoires, une hyperréactivité des bronches et un remodelage des voies respiratoires.",
+        "en": "Being a rather complex condition, several sub-mechanisms known as pathophysiological mechanisms are involved: inflammation of the airways, bronchial hyperreactivity, and airway remodeling."
+    },
+    "Quels sont les symptomes et les facteurs déclencheurs de l'asthme ?": {
+        "fr": "Quels sont les symptomes et les facteurs déclencheurs de l'asthme ?",
+        "en": "What are the symptoms and triggering factors of asthma?"
+    },
+    "L'asthme est perçu à l'observation des symptômes suivants :": {
+        "fr": "L'asthme est perçu à l'observation des symptômes suivants :",
+        "en": "Asthma is perceived by observing the following symptoms :"
+    },
+    "- La toux persistante, surtout la nuit ou tôt le matin ;": {
+        "fr": "- La toux persistante, surtout la nuit ou tôt le matin ;",
+        "en": "- Persistent cough, especially at night or early in the morning ;"
+    },
+    "- La respiration sifflante ou bruyante ;": {
+        "fr": "- La respiration sifflante ou bruyante ;",
+        "en": "- Wheezing or noisy breathing ;"
+    },
+    "- L'essoufflement ou difficulté à respirer ;": {
+        "fr": "- L'essoufflement ou difficulté à respirer ;",
+        "en": "- Shortness of breath or difficulty breathing ;"
+    },
+    "- L'oppression thoracique.": {
+        "fr": "- L'oppression thoracique.",
+        "en": "- Chest tightness."
+    },
+    "Les symptômes peuvent varier d’une personne à l’autre. Et parfois, ils peuvent s’aggraver de façon considérable.": {
+        "fr": "Les symptômes peuvent varier d’une personne à l’autre. Et parfois, ils peuvent s’aggraver de façon considérable.",
+        "en": "Symptoms can vary from person to person. And sometimes, they can worsen considerably."
+    },
+    "Concernant les facteurs déclencheurs, ce sont les éléments nuisibles pouvant provoquer une manifestation des symptomes. En somme, ils peuvent inclure : les allergènes, les irritants, les efforts physiques ou encore les changements climatiques ...": {
+        "fr": "Concernant les facteurs déclencheurs, ce sont les éléments nuisibles pouvant provoquer une manifestation des symptomes. En somme, ils peuvent inclure : les allergènes, les irritants, les efforts physiques ou encore les changements climatiques ...",
+        "en": "Triggering factors are harmful elements that can cause the onset of symptoms. In summary, they may include allergens, irritants, physical exertion, or even climatic changes ..."
+    }
+}
+
+def t(texte):
+    """Fonction pour traduire un texte selon la langue choisie"""
+    langue = st.session_state.get("langue", "fr")
+    return TRANSLATIONS.get(texte, {}).get(langue, texte)
+
+
 def main():
+    # Initialiser la langue
+    if 'langue' not in st.session_state:
+        st.session_state.langue = 'fr'
+
     # Initialiser la page active si elle n'existe pas encore
     if 'page' not in st.session_state:
         st.session_state.page = "Home"
 
     # Sidebar image path correction
-    st.sidebar.image("im_pr/asthi-check.png", width=300)
+    st.sidebar.image("im_pr/asthia.png", width=300)
+
+    # Icône de langue en bas de la sidebar
+    langue_actuelle = st.session_state.langue
+
+    coll1, coll2 = st.sidebar.columns([0.5, 0.5])
+    with coll1:
+        if langue_actuelle == "en":
+            if st.button("🇫🇷", key="switch_to_fr"):
+                st.session_state.langue = "fr"
+    with coll2:
+        if langue_actuelle == "fr":
+            if st.button("🇬🇧", key="switch_to_en"):
+                st.session_state.langue = "en"
+
 
     # Boutons du menu sidebar
-    if st.sidebar.button("Home"):
+    if st.sidebar.button(t("Home")):
         st.session_state.page = "Home"
-    if st.sidebar.button("Visualisation"):
+    if st.sidebar.button(t("Visualisation")):
         st.session_state.page = "Visualisation"
-    if st.sidebar.button("Analyse"):
+    if st.sidebar.button(t("Analyse")):
         st.session_state.page = "Analyse"
-    if st.sidebar.button("ChatBot"):
+    if st.sidebar.button(t("ChatBot")):
         st.session_state.page = "ChatBot"
 
     # Utiliser st.session_state.page comme choix
     choice = st.session_state.page
 
     if choice not in ["Visualisation", "Analyse", "ChatBot"]:
-        st.title("Bienvenue sur ASTHI-CHECK")
-    
-    
+        st.title(t("Bienvenue sur ASTHIA"))
+
+
     # Load dataset
     data = load_data("Dataset/BMI_IOS_SCD_Asthma.csv")
     
     if choice == "Home":
-        st.subheader("Qu'est-ce que l'asthme ?")
+        st.markdown("-------------------")
+        st.subheader(t("Qu'est-ce que l'asthme ?"))
+        st.markdown("")
 
-        xtab1,xtab2 = st.columns(2)
-        with xtab1:
-            st.write("L’asthme est une affection respiratoire chronique qui touche des millions de personnes à travers le monde entier." \
-                    " Cette maladie se caractérise par une inflammation, mais aussi un rétrécissement des voies respiratoires, ce qui rend la respiration assez difficile." \
-                    " Les symptômes de l’asthme peuvent inclure une respiration sifflante, un essoufflement, une sensation d’oppression thoracique" \
-                    " et une toux, en particulier la nuit ou tôt le matin. Bien que l’asthme ne puisse pas être guéri, l'on peut gérer cette condition de manière efficace avec un traitement approprié et des changements de mode de vie." \
-                    " Les personnes asthmatiques peuvent avoir une vie normale. Cela en évitant les déclencheurs, en prenant des médicaments prescrits et en suivant les conseils de leur médecin." \
-                    " Alors la sensibilisation à l’asthme et à ses symptômes est essentielle pour améliorer la qualité de vie des personnes atteintes et pour prévenir les crises d’asthme graves.")
-        
-        with xtab2:
-            st.image("im_pr/asthme.jpeg", width=400)
+        ltab1, ltab2 = st.columns(2)
+        with ltab1:
+            st.markdown(f"""
+            <div style="text-align: justify; font-size: 16px;">
+            {t("L’asthme est une maladie respiratoire chronique qui se caractérise par une inflammation, mais aussi un rétrécissement des voies respiratoires, ce qui rend la respiration plus difficile.")}
+            </div>
+            """, unsafe_allow_html=True) 
+            st.markdown(f"""
+            <div style="text-align: justify; font-size: 16px;">
+            {t("Etant une condition assez complexe, l'on note l'intervention de plusieurs sous-mécanismes dits physiopathologiques qui sont : une inflammation des voies respiratoires, une hyperréactivité des bronches et un remodelage des voies respiratoires.")}
+            </div>
+            """, unsafe_allow_html=True)
+
+            
+        with ltab2:
             st.image("im_pr/asthme11.jpg", width=400)
 
+        st.markdown("")
+        st.markdown("")
+        st.markdown("-------------------")
+
+        st.subheader(t("Quels sont les symptomes et les facteurs déclencheurs de l'asthme ?"))
+        st.markdown("")
+        
+        xxtab1, xxtab2 = st.columns(2)
+        with xxtab1:
+            st.markdown(f"""
+            <div style="text-align: justify; font-size: 16px;">
+            {t("L'asthme est perçu à l'observation des symptômes suivants :")}
+            </div>
+            """, unsafe_allow_html=True)
+            st.markdown("")
+            st.markdown(f"""
+            <div style="text-align: justify; font-size: 16px;">
+            {t("- La toux persistante, surtout la nuit ou tôt le matin ;")}
+            </div>
+            """, unsafe_allow_html=True)
+            st.markdown("")
+            st.markdown(f"""
+            <div style="text-align: justify; font-size: 16px;">
+            {t("- La respiration sifflante ou bruyante ;")}
+            </div>
+            """, unsafe_allow_html=True)
+            st.markdown("")
+            st.markdown(f"""
+            <div style="text-align: justify; font-size: 16px;">
+            {t("- L'essoufflement ou difficulté à respirer ;")}
+            </div>
+            """, unsafe_allow_html=True)
+            st.markdown("")
+            st.markdown(f"""
+            <div style="text-align: justify; font-size: 16px;">
+            {t("- L'oppression thoracique.")}
+            </div>
+            """, unsafe_allow_html=True)
+            st.markdown("")
+        
+        with xxtab2:
+                    st.image("im_pr/asthme33.png", width=400)
+
+
+        st.markdown(f"""
+        <div style="text-align: justify; font-size: 16px;">
+        {t("Les symptômes peuvent varier d’une personne à l’autre. Et parfois, ils peuvent s’aggraver de façon considérable.")}
+        </div>
+        """, unsafe_allow_html=True)
+        st.markdown("")
+        st.markdown(f"""
+        <div style="text-align: justify; font-size: 16px;">
+        {t("Concernant les facteurs déclencheurs, ce sont les éléments nuisibles pouvant provoquer une manifestation des symptomes. En somme, ils peuvent inclure : les allergènes, les irritants, les efforts physiques ou encore les changements climatiques ...")}
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown("")
+        st.markdown("")
+        st.markdown("-------------------")
+
+        st.subheader(t("Quels sont les traitements contre l'asthme ?"))
+        st.markdown("")
+        
+            
 
     elif choice == "Visualisation":
-        st.title("Visualisation des données")
+        st.title(t("Visualisation des données"))
 
-        asthma_filter = st.selectbox("Choisissez le statut de la maladie", pd.unique(data['Asthma']))
+        asthma_filter = st.selectbox(t("Choisissez le statut de la maladie"), pd.unique(data['Asthma']))
         data = data[data['Asthma'] == asthma_filter]
 
         avg_r5 = np.mean(data['R5Hz_PP'])
@@ -119,35 +359,35 @@ def main():
         avg_fres = np.mean(data['Fres_PP'])
 
         kpi1, kpi2, kpi3, kpi4 = st.columns(4)
-        kpi1.metric(label="Moyenne de R5Hz_PP 🩸", value=round(avg_r5), delta=round(avg_r5))
-        kpi2.metric(label="Compte par genre 🚹/🚺", value=count_gender, delta=round(count_gender))
-        kpi3.metric(label="Moyenne de R20Hz_PP 💉", value=f'{round(avg_r20,2)}', delta=f'{round(avg_r20,2)}')
-        kpi4.metric(label="Moyenne de Fres_PP 💊", value=round(avg_fres), delta=round(avg_fres))
+        kpi1.metric(label=t("Moyenne de R5Hz_PP 🩸"), value=round(avg_r5), delta=round(avg_r5))
+        kpi2.metric(label=t("Compte par genre 🚹/🚺"), value=count_gender, delta=round(count_gender))
+        kpi3.metric(label=t("Moyenne de R20Hz_PP 💉"), value=f'{round(avg_r20,2)}', delta=f'{round(avg_r20,2)}')
+        kpi4.metric(label=t("Moyenne de Fres_PP 💊"), value=round(avg_fres), delta=round(avg_fres))
 
         col1, col2 = st.columns(2)
         with col1:
-            st.subheader("Count Plot du top 10 des valeurs du BMI")
+            st.subheader(t("Count Plot du top 10 des valeurs du BMI"))
             fig1 = plt.figure(figsize=(9, 5.97))
             top_values = data['BMI'].value_counts().nlargest(10).index
             filtered_data = data[data['BMI'].isin(top_values)]
             sns.countplot(data=filtered_data, x="BMI", palette='muted')
-            plt.title('Count Plot des 10 premiers BMI')
+            plt.title(t('Count Plot des 10 premiers BMI'))
             st.pyplot(fig1)
 
 
-            st.subheader("Scatter Plot des tailles en fonction des poids")
+            st.subheader(t("Scatter Plot des tailles en fonction des poids"))
             fig2 = plt.figure(figsize=(9, 7.5))
             sns.scatterplot(x="Height (cm)", y="Weight (Kg)", data=data)
-            plt.title("Scatter Plot des tailles en fonction des poids")
+            plt.title(t("Scatter Plot des tailles en fonction des poids"))
             st.pyplot(fig2)
         
         with col2:
-            st.subheader("Pie Chart du top 4 des valeurs fréquentes")
+            st.subheader(t("Pie Chart du top 4 des valeurs fréquentes"))
             numeric_cols = data.select_dtypes(include=np.number).columns.tolist()
             numeric_cols = [col for col in numeric_cols if col != 'Unnamed: 0']
 
             if len(numeric_cols) > 0:
-                selected_col = st.selectbox("Sélectionnez une constante", ['R5Hz_PP', 'R20Hz_PP', 'Fres_PP'])
+                selected_col = st.selectbox(t("Sélectionnez une constante"), ['R5Hz_PP', 'R20Hz_PP', 'Fres_PP'])
                 top_values = data[selected_col].value_counts().nlargest(4)
                 fig3 = plt.figure(figsize=(2,2.2))
                 plt.pie(top_values.values, labels=top_values.index, autopct='%1.1f%%', startangle=90)
@@ -155,21 +395,24 @@ def main():
                 plt.axis("equal")
                 st.pyplot(fig3)
             
-            st.subheader('Boxplot du genre en fonction de l’âge')
+            st.subheader(t('Boxplot du genre en fonction de l’âge'))
             data_filtered = data[data['Gender'] != 'male']
             fig4 = plt.figure(figsize=(5,4.35))
             sns.boxplot(x="Gender", y="Age (months)", data=data_filtered, palette='viridis')
             st.pyplot(fig4)
             
     elif choice == "Analyse":
-        st.title("Analyse")
+        st.title(t("Analyse"))
         tab1,tab2 = st.tabs([":microscope: Machine Learning", ":brain: Deep Learning"])
         
         with tab1:
             # Sliders pour les valeurs numériques
-            st.subheader("Formulaire des paramètres asthmatiques")
+            st.subheader(t("Formulaire des paramètres asthmatiques"))
 
-            st.write("Entrez les paramètres démographiques :")
+            st.markdown("")
+            st.markdown("")
+
+            st.write(t("Entrez les paramètres démographiques :"))
             stab1, stab2 = st.columns(2)
 
             with stab1:
@@ -182,7 +425,11 @@ def main():
                     Weight = st.number_input("Weight", min_value=0, max_value=150, value=0, step=1)
 
 
-            st.write("Entrez les paramètres oscillométriques :")
+            st.markdown("")
+            st.markdown("")
+            st.markdown("")
+
+            st.write(t("Entrez les paramètres oscillométriques :"))
             sstab1, sstab2 = st.columns(2)
             with sstab1:
                     R5Hz_PP = st.number_input("R5Hz_PP", min_value=0.0, max_value=200.0, value=0.0, step=1.0)
@@ -193,7 +440,11 @@ def main():
                     Fres_PP = st.number_input("Fres_PP", min_value=0.0, max_value=230.0, value=0.0, step=1.0)
                     
                     
-            st.write("Entrez les autres paramètres :")
+            st.markdown("")
+            st.markdown("")
+            st.markdown("")
+
+            st.write(t("Entrez les autres paramètres :"))
             ssstab1, ssstab2 = st.columns(2)
             with ssstab1:
                 LABA = st.selectbox("LABA", options=["0", "1"])
@@ -203,7 +454,10 @@ def main():
                 Hydroxyurea = st.selectbox("Hydroxyurea", options=["0", "1"])
 
 
-            button = st.button("Prediction")
+            st.markdown("")
+            st.markdown("")
+
+            button = st.button(t("Prédiction"))
             if button:
                 New_Asthma = predict_asthma(Hydroxyurea, ICS, LABA, Gender, Age, Height , Weight, BMI, R5Hz_PP, R20Hz_PP, X5Hz_PP, Fres_PP)
                 if New_Asthma:
@@ -234,12 +488,12 @@ def main():
             image_height = 200
             image_width = 200
 
-            uploaded_file = st.file_uploader("Sélectionnez une image médicale pour l'analyse par imagerie", type=["jpg", "jpeg", "png"])
+            uploaded_file = st.file_uploader(t("Sélectionnez une image médicale pour l'analyse par imagerie"), type=["jpg", "jpeg", "png"])
 
             if uploaded_file is not None:
 
                 image = Image.open(uploaded_file).convert('RGB')
-                st.image(image, caption='Image sélectionnée', use_container_width=True)
+                st.image(image, caption=t("Image sélectionnée"), use_container_width=True)
 
                 # Prétraitement
                 img = image.resize((image_height, image_width))
@@ -251,9 +505,9 @@ def main():
                 if prediction[0][0] > 0.5:
                     result_dl = "Asthmatique"
                 else:
-                    result_dl = "Normale"
+                    result_dl = "Normal"
 
-                st.success(f"🫁 Résultat Deep Learning : {result_dl}")
+                st.success(f"Résultat Deep Learning : {result_dl}")
 
                 # Sauvegarde dans session_state pour le ChatBot
                 st.session_state['derniere_prediction_dl'] = {
@@ -267,7 +521,7 @@ def main():
             st.image("im_pr/chatbot.png", width=40)
 
         with col2:
-            st.markdown('<h2 style="margin: 0; padding: 0; color:#06d9e0">Discuss with ASTHIBOT<h2>', unsafe_allow_html=True)
+            st.title(t("Discutez avec ASTHIBOT"))
 
             st.markdown("""
             <style>
@@ -335,15 +589,23 @@ def main():
 
         API_URL = "https://router.huggingface.co/nebius/v1/chat/completions"
         headers = {
-            "Authorization": f"Bearer {st.secrets['Token1']}",
+            "Authorization": f"Bearer {os.environ['Token1']}",
         }
 
         def query_hf_model(message, prediction_data=None, prediction_data_dl=None):
 
-            # Construction du contexte avec les dernières données de prédiction
-            context = "Tu es un expert en santé respiratoire. Réponds uniquement aux questions concernant " \
-                    "l'asthme ou les résultats de prédiction liés à l'asthme. Donne des réponses détaillées, " \
-                    "claires et faciles à comprendre pour un patient ou un professionnel de santé."
+            lang = st.session_state.get("langue", "fr")
+
+            if lang == "fr":
+                # Construction du contexte avec les dernières données de prédiction
+                context = "Tu es un expert en santé respiratoire. Réponds uniquement aux questions concernant " \
+                        "l'asthme ou les résultats de prédiction liés à l'asthme. Donne des réponses détaillées, " \
+                        "claires et faciles à comprendre pour un patient ou un professionnel de santé."
+            else:
+                context = "You are a respiratory health expert. Answer only questions related to asthma or asthma prediction results. " \
+                        "Provide detailed, clear, and easy-to-understand responses for patients or healthcare professionals."    
+
+
             if prediction_data:
                 context += f"""
             Voici les dernières données du patient à considérer pour le contexte :
@@ -392,11 +654,11 @@ def main():
 
         prediction_data_dl = st.session_state.get('derniere_prediction_dl', {})
 
-        user_message = st.chat_input("Veuillez poser votre question (ex: Que signifie R5Hz_PP ?)")
+        user_message = st.chat_input(t("Veuillez poser votre question (ex: Que signifie R5Hz_PP ?)"))
 
         if user_message:
             if is_question_relevant(user_message):
-                with st.spinner("ASTHIBOT réfléchit..."):
+                with st.spinner(t("ASTHIBOT réfléchit...")):
                     bot_reply = query_hf_model(user_message, prediction_data, prediction_data_dl)
                 
 
@@ -404,7 +666,7 @@ def main():
                 st.session_state.messages.append({"role": "user", "content": user_message})
                 st.session_state.messages.append({"role": "assistant", "content": bot_reply})
             else:
-                st.warning("⚠️ Je ne peux répondre à cette question. Veuillez réessayer")
+                st.warning(t("⚠️ Je ne peux répondre à cette question. Veuillez réessayer"))
         
         # Affichage des messages avec style bulle
         for msg in st.session_state.messages:
