@@ -1,9 +1,8 @@
-streamlit
-pandas
-seaborn
-matplotlib
-tensorflow
-requests
-base64
-pickle
-io
+streamlit==1.40.0
+pandas==2.3.1
+numpy==1.26.4
+requests==2.32.4
+seaborn==0.13.2
+matplotlib==3.10.3
+tensorflow==2.15.0
+scikit-learn==1.4.2
