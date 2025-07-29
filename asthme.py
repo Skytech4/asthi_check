@@ -162,6 +162,10 @@ TRANSLATIONS = {
         "fr": "ASTHIBOT réfléchit...",
         "en": "ASTHIBOT thinks..."
     },
+    "👋 Bonjour, je suis AsthiBot ! Comment puis-je vous aider aujourd'hui ?": {
+        "fr": "👋 Bonjour, je suis AsthiBot ! Comment puis-je vous aider aujourd'hui ?",
+        "en": "👋 Good morning, I am AsthiBot ! How can I help you today ?"
+    },
     "Discutez avec ASTHIBOT": {
         "fr": "Discutez avec ASTHIBOT",
         "en": "Discuss with ASTHIBOT"
@@ -205,6 +209,26 @@ TRANSLATIONS = {
     "Concernant les facteurs déclencheurs, ce sont les éléments nuisibles pouvant provoquer une manifestation des symptomes. En somme, ils peuvent inclure : les allergènes, les irritants, les efforts physiques ou encore les changements climatiques ...": {
         "fr": "Concernant les facteurs déclencheurs, ce sont les éléments nuisibles pouvant provoquer une manifestation des symptomes. En somme, ils peuvent inclure : les allergènes, les irritants, les efforts physiques ou encore les changements climatiques ...",
         "en": "Triggering factors are harmful elements that can cause the onset of symptoms. In summary, they may include allergens, irritants, physical exertion, or even climatic changes ..."
+    },
+    "Quels sont les traitements contre l'asthme ?": {
+        "fr": "Quels sont les traitements contre l'asthme ?",
+        "en": "What are the treatments for asthma?"
+    },
+    "Malgré le fait que l’asthme ne puisse pas encore être guéri, l’on peut du moins la contrôler, ceci grâce à plusieurs traitements méticuleux pouvant permettre aux personnes atteintes de s’épanouir. D’après l’OMS et aux vues des avancées de la médecine moderne, le traitement le plus courant de nos jours reste encore l’utilisation d’un inhalateur qui diffuse le médicament directement dans les poumons.":{
+        "fr": "Malgré le fait que l’asthme ne puisse pas encore être guéri, l’on peut du moins la contrôler, ceci grâce à plusieurs traitements méticuleux pouvant permettre aux personnes atteintes de s’épanouir. D’après l’OMS et aux vues des avancées de la médecine moderne, le traitement le plus courant de nos jours reste encore l’utilisation d’un inhalateur qui diffuse le médicament directement dans les poumons.",
+        "en": "Although asthma cannot yet be cured, it can at least be controlled thanks to several meticulous treatments that allow affected individuals to thrive. According to the WHO and in light of modern medical advances, the most common treatment today remains the use of an inhaler that delivers medication directly into the lungs."
+    },
+    "- Les bronchodilatateurs à savoir le salbutamol communément appelée ventoline qui ouvrent les voies aériennes et soulagent les symptômes. Et ;": {
+        "fr": "- Les bronchodilatateurs à savoir le salbutamol communément appelée ventoline qui ouvrent les voies aériennes et soulagent les symptômes. Et ;",
+        "en": "- Bronchodilators, such as salbutamol—commonly known as Ventolin—which open the airways and relieve symptoms. And ;"
+    },
+    "- Les stéroïdes comme la béclométasone ou la ciclésonide qui réduisent l’inflammation des voies respiratoires, réduisant ainsi les risques de crises d’asthme graves et de décès.": {
+        "fr": "- Les stéroïdes comme la béclométasone ou la ciclésonide qui réduisent l’inflammation des voies respiratoires, réduisant ainsi les risques de crises d’asthme graves et de décès.",
+        "en": "- Steroids such as beclometasone or ciclesonide, which reduce inflammation in the airways, thereby lowering the risk of severe asthma attacks and death."
+    },
+    "Parallèlement, nous avons les thérapies biologiques qui requièrent l’utilisation des anticorps monoclonaux pour l’élimination d’éléments inflammatoires en cas d’asthme sévère chez un individu.": {
+        "fr": "Parallèlement, nous avons les thérapies biologiques qui requièrent l’utilisation des anticorps monoclonaux pour l’élimination d’éléments inflammatoires en cas d’asthme sévère chez un individu.",
+        "en": "In parallel, there are biological therapies that involve the use of monoclonal antibodies to eliminate inflammatory elements in cases of severe asthma in an individual."
     }
 }
 
@@ -323,7 +347,7 @@ def main():
             st.markdown("")
         
         with xxtab2:
-                    st.image("im_pr/asthme33.png", width=400)
+            st.image("im_pr/asthme33.png", width=400)
 
 
         st.markdown(f"""
@@ -344,9 +368,41 @@ def main():
 
         st.subheader(t("Quels sont les traitements contre l'asthme ?"))
         st.markdown("")
-        
-            
+        st.markdown(f"""
+        <div style="text-align: justify; font-size: 16px;">
+        {t("Malgré le fait que l’asthme ne puisse pas encore être guéri, l’on peut du moins la contrôler, ceci grâce à plusieurs traitements méticuleux pouvant permettre aux personnes atteintes de s’épanouir. D’après l’OMS et aux vues des avancées de la médecine moderne, le traitement le plus courant de nos jours reste encore l’utilisation d’un inhalateur qui diffuse le médicament directement dans les poumons.")}
+        </div>
+        """, unsafe_allow_html=True)
+        st.markdown("")
+        st.markdown(f"""
+        <div style="text-align: justify; font-size: 16px;">
+        {t("- Les bronchodilatateurs à savoir le salbutamol communément appelée ventoline qui ouvrent les voies aériennes et soulagent les symptômes. Et ;")}
+        </div>
+        """, unsafe_allow_html=True)
+        st.markdown("")
+        st.markdown(f"""
+        <div style="text-align: justify; font-size: 16px;">
+        {t("- Les stéroïdes comme la béclométasone ou la ciclésonide qui réduisent l’inflammation des voies respiratoires, réduisant ainsi les risques de crises d’asthme graves et de décès.")}
+        </div>
+        """, unsafe_allow_html=True)
+        st.markdown("")
+        st.markdown(f"""
+        <div style="text-align: justify; font-size: 16px;">
+        {t("Parallèlement, nous avons les thérapies biologiques qui requièrent l’utilisation des anticorps monoclonaux pour l’élimination d’éléments inflammatoires en cas d’asthme sévère chez un individu.")}
+        </div>
+        """, unsafe_allow_html=True)
 
+        st.markdown("")
+
+        btab1, btab2 = st.columns(2)
+        with btab1:
+            st.image("im_pr/asthme.jpeg", width=400)
+
+        with btab2:
+            st.image("im_pr/asthme3.jpg", width=400)
+        
+        
+        
     elif choice == "Visualisation":
         st.title(t("Visualisation des données"))
 
