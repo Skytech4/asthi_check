@@ -27,7 +27,7 @@ def file_download(df):
 
 
 # Uniquement pour la probabilité
-with open("nettoyage/model_asthma.pkl", "rb") as file:
+with open('nettoyage/model_asthma.pkl', 'rb') as file:
     loaded_model_with_proba = pickle.load(file)
 
 def predict_asthma(Hydroxyurea, ICS, LABA, Gender, Age, Height , Weight, BMI, R5Hz_PP, R20Hz_PP, X5Hz_PP, Fres_PP):
@@ -879,3 +879,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
