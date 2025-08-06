@@ -10,6 +10,8 @@ import pickle
 import io
 import requests
 import os
+import plotly.graph_objects as go
+
 
 
 @st.cache_data
@@ -23,6 +25,10 @@ def file_download(df):
     href = f'<a href="data:file/csv;base64,{b64}" download="BMI_IOS_SCD_Asthma.csv">Download CSV File</a>'
     return href
 
+
+# Uniquement pour la probabilité
+with open("nettoyage/model_asthma.pkl", "rb") as file:
+    loaded_model_with_proba = pickle.load(file)
 
 def predict_asthma(Hydroxyurea, ICS, LABA, Gender, Age, Height , Weight, BMI, R5Hz_PP, R20Hz_PP, X5Hz_PP, Fres_PP):
     try:
@@ -229,6 +235,14 @@ TRANSLATIONS = {
     "Parallèlement, nous avons les thérapies biologiques qui requièrent l’utilisation des anticorps monoclonaux pour l’élimination d’éléments inflammatoires en cas d’asthme sévère chez un individu.": {
         "fr": "Parallèlement, nous avons les thérapies biologiques qui requièrent l’utilisation des anticorps monoclonaux pour l’élimination d’éléments inflammatoires en cas d’asthme sévère chez un individu.",
         "en": "In parallel, there are biological therapies that involve the use of monoclonal antibodies to eliminate inflammatory elements in cases of severe asthma in an individual."
+    },
+    "Le patient est :": {
+        "fr": "Le patient est :",
+        "en": "The patient is :"
+    },
+    "La probabilité de ce résultat est élevée à :": {
+        "fr": "La probabilité de ce résultat est élevée à :",
+        "en": "The probability of this result is high at :"
     }
 }
 
@@ -250,18 +264,20 @@ def main():
     # Sidebar image path correction
     st.sidebar.image("im_pr/asthia.png", width=300)
 
-    # Icône de langue en bas de la sidebar
-    langue_actuelle = st.session_state.langue
+    # Sélecteur de langue
+    langue_actuelle = st.session_state.get("langue", "fr")
 
-    coll1, coll2 = st.sidebar.columns([0.5, 0.5])
-    with coll1:
-        if langue_actuelle == "en":
-            if st.button("🇫🇷", key="switch_to_fr"):
-                st.session_state.langue = "fr"
-    with coll2:
-        if langue_actuelle == "fr":
-            if st.button("🇬🇧", key="switch_to_en"):
-                st.session_state.langue = "en"
+    langue_choisie = st.sidebar.selectbox(
+        "🌐 Langue/Language",
+        options=["fr", "en"],
+        format_func=lambda x: "🇫🇷 Français" if x == "fr" else "🇬🇧 English"
+    )
+
+    # Met à jour la langue si elle a changé
+    if langue_choisie != langue_actuelle:
+        st.session_state.langue = langue_choisie
+
+
 
 
     # Boutons du menu sidebar
@@ -306,7 +322,6 @@ def main():
         with ltab2:
             st.image("im_pr/asthme11.jpg", width=400)
 
-        st.markdown("")
         st.markdown("")
         st.markdown("-------------------")
 
@@ -517,7 +532,60 @@ def main():
             if button:
                 New_Asthma = predict_asthma(Hydroxyurea, ICS, LABA, Gender, Age, Height , Weight, BMI, R5Hz_PP, R20Hz_PP, X5Hz_PP, Fres_PP)
                 if New_Asthma:
-                    st.success(f"The patient have : **{New_Asthma}**")
+                    st.success(f"{t('Le patient est :')} **{New_Asthma}**")
+
+                        # -- Création du vecteur d'entrée au bon format --
+                    input_data = pd.DataFrame([[
+                        float(Hydroxyurea), float(ICS), float(LABA), float(Gender), Age, Height,
+                        Weight, BMI, R5Hz_PP, R20Hz_PP, X5Hz_PP, Fres_PP
+                    ]], columns=[
+                        "Hydroxyurea", "ICS", "LABA", "Gender", "Age", "Height",
+                        "Weight", "BMI", "R5Hz_PP", "R20Hz_PP", "X5Hz_PP", "Fres_PP"
+                    ])
+
+                    # -- Récupération de la probabilité --
+                    proba = loaded_model_with_proba.predict_proba(input_data)[0]
+                    class_index = 1 if New_Asthma == "Asthmatique" else 0
+                    proba_val = round(100 * proba[class_index], 2)
+
+                    # -- Affichage de la probabilité --
+                    st.markdown(
+                        f"<div style='padding: 10px; border: 2px solid #aaa; border-radius: 8px; font-size: 16px; text-align: center;'>"
+                        f"{t('La probabilité de ce résultat est élevée à :')} <b>{proba_val} %</b>"
+                        f"</div>",
+                        unsafe_allow_html=True
+                    )
+
+                    st.markdown("")
+                    st.markdown("")
+
+                    # -- Jauge avec Plotly --
+                    fig = go.Figure(go.Indicator(
+                        mode="gauge+number",
+                        value=proba_val,
+                        domain={'x': [0, 1], 'y': [0, 1]},
+                        number={'font': {'color': 'black'}},
+                        gauge={
+                            'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': "white", 'tickfont': {'color': 'white'}},
+                            'bar': {'color': "#d9534f" if class_index == 1 else "#5cb85c"},
+                            'bgcolor': "#000000",
+                            'borderwidth': 2,
+                            'bordercolor': "gray",
+                            'steps': [
+                                {'range': [0, 50], 'color': '#111111'},
+                                {'range': [50, 75], 'color': '#222222'},
+                                {'range': [75, 100], 'color': '#333333'}
+                            ],
+                            'threshold': {
+                                'line': {'color': "red", 'width': 4},
+                                'thickness': 0.75,
+                                'value': proba_val
+                            }
+                        }
+                    ))
+                    fig.update_layout(paper_bgcolor="#000000", plot_bgcolor="#000000", height=250, margin=dict(t=20, b=0, l=20, r=20))
+                    st.plotly_chart(fig, use_container_width=True)
+
 
 
                     # Sauvegarde des données dans session_state pour le ChatBot
@@ -534,7 +602,8 @@ def main():
                         "R20Hz_PP": R20Hz_PP,
                         "X5Hz_PP": X5Hz_PP,
                         "Fres_PP": Fres_PP,
-                        "Résultat": New_Asthma
+                        "Résultat": New_Asthma,
+                        "Probabilité": proba_val
                     }
 
         with tab2:
@@ -558,16 +627,56 @@ def main():
 
                 prediction = deep_model.predict(img_array)
 
-                if prediction[0][0] > 0.5:
-                    result_dl = "Asthmatique"
-                else:
-                    result_dl = "Normal"
+                # Obtenir la probabilité brute
+                prob = float(prediction[0][0])
+                result_dl = "Asthmatique" if prob > 0.5 else "Normal"
+                proba_text = round(prob * 100, 2) if result_dl == "Asthmatique" else round((1 - prob) * 100, 2)
 
-                st.success(f"Résultat Deep Learning : {result_dl}")
+                st.success(f"{t('Le patient est :')} **{result_dl}**")
+
+                st.markdown(
+                    f"<div style='padding: 10px; border: 2px solid #aaa; border-radius: 8px; font-size: 16px; text-align: center;'>"
+                    f"{t('La probabilité de ce résultat est élevée à :')} <b>{proba_text} %</b>"
+                    f"</div>",
+                    unsafe_allow_html=True
+                )
+
+                st.markdown("")
+                st.markdown("")
+                
+                fig = go.Figure(go.Indicator(
+                    mode = "gauge+number",
+                    value = proba_text,
+                    domain = {'x': [0, 1], 'y': [0, 1]},
+                    number = {'font': {'color': 'black'}},
+                    gauge = {
+                        'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': "white", 'tickfont': {'color': 'white'}},
+                        'bar': {'color': "#d9534f" if result_dl == "Asthmatique" else "#5cb85c"},
+                        'bgcolor': "#000000",
+                        'borderwidth': 2,
+                        'bordercolor': "gray",
+                        'steps': [
+                            {'range': [0, 50], 'color': '#111111'},
+                            {'range': [50, 75], 'color': '#222222'},
+                            {'range': [75, 100], 'color': '#333333'}
+                        ],
+                        'threshold': {
+                            'line': {'color': "red", 'width': 4},
+                            'thickness': 0.75,
+                            'value': proba_text
+                        }
+                    }
+                ))
+
+                fig.update_layout(paper_bgcolor="#000000", plot_bgcolor="#000000", height=250, margin=dict(t=20, b=0, l=20, r=20))
+                st.plotly_chart(fig, use_container_width=True)
+
+
 
                 # Sauvegarde dans session_state pour le ChatBot
                 st.session_state['derniere_prediction_dl'] = {
-                    "Résultat_DL": result_dl
+                    "Résultat_DL": result_dl,
+                    "Probabilité_DL": proba_text
                 }
 
 
@@ -637,7 +746,7 @@ def main():
             "prédiction", "prediction", "résultat", "result", "diagnostic", "diagnosis",
             "proposition", "proposition de traitement", "question", "réponse",
             "répondre", "answer", "aide", "help", "conseil", "advice", "informations", "information",
-            "image", "radiographie", "scanner", "état de santé", "health status"
+            "image", "radiographie", "scanner", "état de santé", "health status", "probabilité", "probability"
         ]
 
         def is_question_relevant(question):
